@@ -1,0 +1,68 @@
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Web Worker</title>
+</head>
+<body>
+  <div>
+    <p>Worker 用来加载运行js的，为了让单线程的JS实现多线程业务逻辑.</p>
+    <p>Worker 可以创建Worker,但是所有Worker必须同源，不能使用本机文件系统，如File：//..</p>
+    <p>Worker中部分内置对象不可用，如</p>
+    <ul>
+      <li>window</li>
+      <li>document</li>
+      <li>DOM对象</li>
+      <li>parent</li>
+    </ul>
+  </div>
+  <div>
+    <p>常用方法</p>
+    <span>slef 指代 worker线程本身 它的对应的执行上下文为 DedicatedWorkerGlobalScope == WorkerGlobalScope.slef </span>
+    <span>worker 指代 主线程 它对应的执行上下文为 WorkerGlobalScope </span>
+    <ul>
+      <li>postMessage(obj || String [, descript])</li>
+      <li>worker.terminate< 主线程关闭线程</li>
+      <li>slef.close worker线程自我关闭</li>
+      <li>importScripts('..js','..js')引入js的全局变量等都可以在线程中使用，除限制限制的以外</li>
+      <li>onmessage</li>
+      <li>onerror</li>
+      <li>onmessageerror</li>
+    </ul>
+  </div>
+  <div id='comm'>
+    
+  </div>
+  <!-- 常规方式 -->
+  <script>
+    var worker = new Worker("javascripts/worker1.js")
+    worker.onmessage = function (msg) {
+      if(msg.data.i > 5) {
+        worker.terminate();
+      }
+      console.log('msg',msg,"this",this) // this DedicatedWorkerGlobalScope {name: "", onmessage: null, onmessageerror: null, postMessage: ƒ, close: ƒ, …} ƒ WorkerGlobalScope() { [native code] } DedicatedWorkerGlobalScope {name: "", onmessage: null, onmessageerror: null, postMessage: ƒ, close: ƒ, …}
+    }
+    worker.onerror = function (e) {
+      console.log('eroor',e)
+    }
+    worker.onmessageerror = function (e) {
+      console.log('messageerror',e)
+    }
+  </script>
+  <!-- 确保同源方式 / 同页面Worker-->
+  <script id="worker" type="app/worker">
+    postMessage('some message');
+  </script>
+  <script>
+    var blob = new Blob([document.querySelector("#worker").textContent])
+    var url = window.URL.createObjectURL(blob)
+    var worker = new Worker(url)
+    worker.onmessage = function (msg) {
+      console.log('msg',msg)
+    }
+  </script>
+
+</body>
+
+</html>
